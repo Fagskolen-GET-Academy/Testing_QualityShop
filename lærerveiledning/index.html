@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'">
+  <title>Kryptert lærerveiledning – Quality Shop</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172234;
+      background: #eaf0f5;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem max(1rem, calc((100vw - 1080px) / 2));
+      color: #fff;
+      background: #102f4f;
+    }
+
+    .brand { margin: 0; font-weight: 750; letter-spacing: 0.02em; }
+    .lock-button { border: 1px solid #b9d6ef; color: #fff; background: transparent; }
+
+    main { max-width: 1080px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    .unlock-shell { display: grid; place-items: center; min-height: calc(100vh - 8rem); }
+
+    .unlock-card {
+      width: min(100%, 520px);
+      padding: clamp(1.5rem, 5vw, 2.75rem);
+      border: 1px solid #cbd8e4;
+      border-radius: 1rem;
+      background: #fff;
+      box-shadow: 0 18px 50px rgb(18 48 79 / 12%);
+    }
+
+    .eyebrow { margin: 0 0 0.5rem; color: #236a99; font-weight: 750; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; }
+    h1 { margin: 0 0 1rem; line-height: 1.15; }
+    .intro { color: #526273; line-height: 1.6; }
+    label { display: block; margin: 1.5rem 0 0.45rem; font-weight: 700; }
+
+    input {
+      width: 100%;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid #8295a8;
+      border-radius: 0.45rem;
+      color: #172234;
+      background: #fff;
+    }
+
+    input:focus { outline: 3px solid #acd8f5; outline-offset: 1px; border-color: #236a99; }
+
+    .primary {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border: 0;
+      border-radius: 0.45rem;
+      color: #fff;
+      background: #176b9b;
+      font-weight: 750;
+    }
+
+    .primary:hover { background: #0f537a; }
+    .primary:disabled { cursor: wait; opacity: 0.65; }
+    .status { min-height: 1.5rem; margin: 1rem 0 0; color: #9b2828; font-weight: 650; }
+    .security-note { margin: 1.25rem 0 0; padding-top: 1rem; border-top: 1px solid #dbe3ea; color: #667583; font-size: 0.9rem; line-height: 1.5; }
+
+    .guide {
+      padding: clamp(1.25rem, 4vw, 3rem);
+      border: 1px solid #cbd8e4;
+      border-radius: 0.75rem;
+      background: #fff;
+      box-shadow: 0 10px 35px rgb(18 48 79 / 9%);
+      line-height: 1.6;
+    }
+
+    .guide h1, .guide h2, .guide h3 { color: #102f4f; line-height: 1.25; }
+    .guide h2 { margin-top: 2.5rem; padding-bottom: 0.4rem; border-bottom: 2px solid #dce6ee; }
+    .guide table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; }
+    .guide th, .guide td { padding: 0.65rem; border: 1px solid #ccd8e2; text-align: left; vertical-align: top; }
+    .guide th { background: #eaf2f8; }
+    .guide code { padding: 0.12rem 0.35rem; border-radius: 0.25rem; background: #edf2f6; }
+    .guide pre { overflow-x: auto; padding: 1rem; border-radius: 0.4rem; background: #162638; color: #f1f6fa; }
+    .guide pre code { padding: 0; background: transparent; }
+    .guide .callout { padding: 1rem 1.2rem; border-left: 4px solid #176b9b; background: #eaf4fa; }
+    [hidden] { display: none !important; }
+
+    @media print {
+      .topbar { display: none; }
+      main { max-width: none; padding: 0; }
+      .guide { border: 0; box-shadow: none; }
+    }
+  </style>
+  <script src="lærerfasit.enc.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <p class="brand">Quality Shop · lærerveiledning</p>
+    <button id="lock-button" class="lock-button" type="button" hidden>Lås</button>
+  </header>
+
+  <main>
+    <section id="unlock-shell" class="unlock-shell" aria-labelledby="unlock-heading">
+      <form id="unlock-form" class="unlock-card">
+        <p class="eyebrow">Kryptert innhold</p>
+        <h1 id="unlock-heading">Åpne lærerfasiten</h1>
+        <p class="intro">Dekrypteringen skjer lokalt i nettleseren. Passordet sendes ikke noe sted og lagres ikke av siden.</p>
+
+        <label for="password">Passord</label>
+        <input id="password" name="password" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" required autofocus>
+        <button id="unlock-button" class="primary" type="submit">Åpne lærerveiledningen</button>
+        <p id="status" class="status" role="alert" aria-live="polite"></p>
+        <p class="security-note">Nøkkelen avledes med PBKDF2-SHA-256. Innholdet er kryptert og integritetsbeskyttet med AES-256-GCM.</p>
+      </form>
+    </section>
+
+    <article id="guide" class="guide" hidden></article>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const form = document.querySelector("#unlock-form");
+      const shell = document.querySelector("#unlock-shell");
+      const passwordInput = document.querySelector("#password");
+      const unlockButton = document.querySelector("#unlock-button");
+      const lockButton = document.querySelector("#lock-button");
+      const status = document.querySelector("#status");
+      const guide = document.querySelector("#guide");
+
+      function decodeBase64(value) {
+        const binary = atob(value);
+        return Uint8Array.from(binary, character => character.charCodeAt(0));
+      }
+
+      async function decryptGuide(password) {
+        const payload = window.ENCRYPTED_TEACHER_GUIDE;
+        if (!payload || payload.version !== 1) {
+          throw new Error("Kryptert innhold mangler eller har ukjent format.");
+        }
+
+        const encoder = new TextEncoder();
+        const passwordBytes = encoder.encode(password.normalize("NFC"));
+        try {
+          const baseKey = await crypto.subtle.importKey(
+            "raw",
+            passwordBytes,
+            "PBKDF2",
+            false,
+            ["deriveKey"]);
+          const key = await crypto.subtle.deriveKey(
+            {
+              name: payload.kdf.name,
+              hash: payload.kdf.hash,
+              salt: decodeBase64(payload.salt),
+              iterations: payload.kdf.iterations
+            },
+            baseKey,
+            { name: payload.algorithm, length: 256 },
+            false,
+            ["decrypt"]);
+          const plainBuffer = await crypto.subtle.decrypt(
+            {
+              name: payload.algorithm,
+              iv: decodeBase64(payload.iv),
+              additionalData: encoder.encode(payload.aad),
+              tagLength: payload.tagLength
+            },
+            key,
+            decodeBase64(payload.ciphertext));
+
+          return new TextDecoder("utf-8", { fatal: true }).decode(plainBuffer);
+        } finally {
+          passwordBytes.fill(0);
+        }
+      }
+
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        status.textContent = "";
+        unlockButton.disabled = true;
+        unlockButton.textContent = "Dekrypterer …";
+
+        try {
+          const html = await decryptGuide(passwordInput.value);
+          passwordInput.value = "";
+          guide.innerHTML = html;
+          guide.hidden = false;
+          shell.hidden = true;
+          lockButton.hidden = false;
+          guide.focus();
+        } catch {
+          passwordInput.value = "";
+          status.textContent = "Kunne ikke dekryptere. Passordet er feil, eller filen er skadet.";
+          passwordInput.focus();
+        } finally {
+          unlockButton.disabled = false;
+          unlockButton.textContent = "Åpne lærerveiledningen";
+        }
+      });
+
+      lockButton.addEventListener("click", () => {
+        guide.replaceChildren();
+        guide.hidden = true;
+        lockButton.hidden = true;
+        shell.hidden = false;
+        status.textContent = "";
+        passwordInput.focus();
+      });
+    })();
+  </script>
+</body>
+</html>
