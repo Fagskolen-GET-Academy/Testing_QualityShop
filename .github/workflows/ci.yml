@@ -1,0 +1,69 @@
+name: Quality Shop CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore Testing_QualityShop.sln
+      - run: dotnet format Testing_QualityShop.sln --verify-no-changes --no-restore
+      - run: dotnet build Testing_QualityShop.sln --configuration Release --no-restore
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj
+      - run: >-
+          dotnet test Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj
+          --configuration Release
+          --no-restore
+          --filter TestCategory!=FlakyExample
+          --collect "XPlat Code Coverage"
+
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj
+      - run: >-
+          dotnet test Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj
+          --configuration Release
+          --no-restore
+          --collect "XPlat Code Coverage"
+
+  ui-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore Testing_QualityShop.sln
+      - run: dotnet build Testing_QualityShop.sln --no-restore
+      - run: pwsh Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+      - name: Start Quality Shop
+        run: |
+          dotnet run --project Testing_QualityShop.Api --no-build --urls http://127.0.0.1:5080 > qualityshop.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail http://127.0.0.1:5080/api/products && break
+            sleep 1
+          done
+      - name: Run UI tests
+        env:
+          QUALITYSHOP_BASE_URL: http://127.0.0.1:5080
+        run: dotnet test Testing_QualityShop.Test.Ui --no-build

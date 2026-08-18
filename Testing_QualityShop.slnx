@@ -1,1 +1,7 @@
-<Solution />
+<Solution>
+  <Project Path="Testing_QualityShop.Api/Testing_QualityShop.Api.csproj" />
+  <Project Path="Testing_QualityShop.Core/Testing_QualityShop.Core.csproj" />
+  <Project Path="Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj" />
+  <Project Path="Testing_QualityShop.Test.Ui/Testing_QualityShop.Test.Ui.csproj" />
+  <Project Path="Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj" />
+</Solution>
