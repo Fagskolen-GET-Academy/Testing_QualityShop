@@ -22,14 +22,16 @@ Browser → Minimal API → ShopService (lock, state, clock, identity)
 
 Start with `ShopRules.Pricing.cs` and `ShopRules.cs`, then `ShopRulesTests`. `ChangeQuantity` returns a new cart. `PrepareOrder` validates and returns order data plus remaining stock; it never saves anything. The shell applies that plan under its store lock. Domain objects remain familiar C# classes; purity is a property of these functions, not an advanced language framework. Tests pass ordinary input objects and assert outputs and unchanged inputs. No fake, mock, HTTP, database or ASP.NET is involved.
 
-## Dependency Injection / Repository
+## Dependency Injection / Repository / Test Doubles
 
 ```text
 Browser → Minimal API → ShopService → IShopRepository → InMemoryShopRepository
 Unit:                  ShopService → FakeShopRepository
 ```
 
-The composition root is `Api/Program.cs`. `Core` knows only its own repository/session interfaces and `TimeProvider`. A session exposes a detached working snapshot. `Commit()` publishes changes; disposal without commit discards them. This explicit boundary makes order, stock and cart changes one operation. The production repository uses a lock and copies. The hand-written fake implements the same small contract without IO; tests can arrange stock directly and observe saved state. One counter assertion illustrates a spy (interaction verification); a mocking framework is not needed. A mock would instead prescribe and verify an interaction, but would still not prove actual SQL behavior.
+All variants already use ASP.NET Core's dependency injection container and constructor injection. Variant 03 specifically introduces dependency inversion through a storage interface: the service can run against different implementations and test doubles.
+
+The composition root is `Api/Program.cs`. `Core` knows only its own repository/session interfaces and `TimeProvider`. A session exposes a detached working snapshot. `Commit()` publishes changes; disposal without commit discards them. This explicit boundary makes order, stock and cart changes one operation. The production repository uses a lock and copies. The hand-written fake implements the same small contract without IO; tests can arrange stock directly and observe saved state. Its counter assertion illustrates a spy. `MockInteractionTests` uses Moq to configure a specific session interaction and verify one commit. Moq is confined to the DI unit-test project. A fake is often easier to read for multi-step stateful scenarios; a mock is useful when an interaction is the actual subject of the test. Neither proves real SQL behavior.
 
 ## SQL Server
 
@@ -39,11 +41,20 @@ Unit:                  ShopService → FakeShopRepository
 Integration: HttpClient → real ASP.NET Core → service → real repository → real SQL
 ```
 
-Core, service, fake tests, API and frontend are owned copies. Infrastructure uses Dapper, parameterized SQL, explicit schema/seed scripts and a small version table. A SQL session holds a serializable transaction and a lock on the singleton shop row. Separate processes therefore cannot overwrite the same shared cart from stale snapshots. Order insertion, line insertion, stock reduction and cart clearing commit together. SQL failure rolls back all of them.
+Core, service, fake tests, API and frontend are owned copies. Infrastructure uses Dapper, parameterized SQL, explicit schema/seed scripts and a small version table. The SQL-owned repository interface makes reads and mutations visible:
 
-For readability this laboratory loads the small shop snapshot, including order history, on each session and writes the six stock rows and current cart on commit. This is deliberately easy to step through, and suitable for this tiny shared-cart case. It is not a scaling strategy for a large shop. No generic repository base, mediator or cross-variant application library hides the test boundary.
+```text
+Read:     ShopService → GetProducts / GetProduct / SearchProducts → SELECT Products
+          ShopService → GetOrders / GetOrder → SELECT Orders JOIN OrderLines
+          ShopService → GetCart → short shared read transaction for discount + lines
+Mutation: ShopService → OpenSession → consistent snapshot → validation → writes → Commit
+```
 
-SQL API tests use a real `WebApplicationFactory<Program>`, create a unique database per fixture, reset before each scenario, and drop it after all hosts stop. Persistence tests include direct SQL probes, a second host, constraint rollback, repeated initialization/reset and concurrent repository instances. Fake tests cannot establish schema constraints, decimal mapping, actual commits, durability or database locking. Browser tests cover visible behavior through the full chain, with screenshots/traces on failure.
+Catalog and order reads never open the mutation session, lock shop metadata or load unrelated cart/history. Single-order reads filter in SQL and retrieve headers/lines in one join. Cart reads use a short shared transaction to keep discount and lines consistent. Mutations acquire an exclusive lock on the singleton shop row before touching other state; the shared cart read and concurrent writers therefore see a consistent result. Order insertion, line insertion, stock reduction and cart clearing commit together. SQL failure rolls back all of them.
+
+For readability, mutation sessions still load the small shop snapshot, including order history, and write the six stock rows and current cart on commit. This is easy to step through for the tiny shared-cart case, rather than a scaling strategy for a large shop. Read requests use their focused SQL methods. No generic repository base, mediator or cross-variant application library hides the boundary.
+
+SQL API tests use a real `WebApplicationFactory<Program>`, create a unique database per fixture, reset before each scenario, and drop it after all hosts stop. Persistence tests include direct SQL probes, a second host, constraint rollback, repeated initialization/reset and concurrent repository instances. Additional tests hold the mutation metadata lock while reading catalog/orders and check literal parameterized SQL search. Fake tests cannot establish schema constraints, decimal mapping, actual commits, durability or database locking. Browser tests cover visible behavior through the full chain, with screenshots/traces on failure.
 
 ## Choosing a test boundary
 

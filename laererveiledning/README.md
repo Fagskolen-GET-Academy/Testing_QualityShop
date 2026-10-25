@@ -1,6 +1,6 @@
 # Kryptert lærerveiledning
 
-`index.html` dekrypterer lærerfasiten lokalt i nettleseren. Den krypterte teksten ligger i `lærerfasit.enc.js`; verken passord eller dekryptert innhold lagres av siden.
+`index.html` dekrypterer lærerfasiten lokalt i nettleseren. Den krypterte teksten ligger i `laererfasit.enc.js`; verken passord eller dekryptert innhold lagres av siden.
 
 ## Bruk
 
@@ -27,4 +27,4 @@ En som kopierer filene kan forsøke passordgjetting lokalt uten å kontakte denn
   -DeleteSource
 ```
 
-`-DeleteSource` sletter klartekstfilen etter vellykket kryptering. Ta ønsket sikkerhetskopi før du bruker valget. Output skrives til `lærerfasit.enc.js` dersom `-OutputPath` ikke oppgis.
+`-DeleteSource` sletter klartekstfilen etter vellykket kryptering. Ta ønsket sikkerhetskopi før du bruker valget. Output skrives til `laererfasit.enc.js` dersom `-OutputPath` ikke oppgis.

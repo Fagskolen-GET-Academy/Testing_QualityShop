@@ -2,23 +2,13 @@ namespace Testing_QualityShop.SqlServer.Core;
 
 public sealed class ShopService(IShopRepository repository, PriceCalculator prices, TimeProvider clock)
 {
-    public IReadOnlyList<Product> GetProducts()
-    {
-        using var session = repository.OpenSession();
-        return session.State.Products.ToList();
-    }
+    public IReadOnlyList<Product> GetProducts() => repository.GetProducts();
 
-    public Product? GetProduct(int id) => GetProducts().SingleOrDefault(p => p.Id == id);
+    public Product? GetProduct(int id) => repository.GetProduct(id);
 
-    public IReadOnlyList<Product> SearchProducts(string? query) => GetProducts()
-        .Where(p => string.IsNullOrWhiteSpace(query) || p.Name.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
-        .ToList();
+    public IReadOnlyList<Product> SearchProducts(string? query) => repository.SearchProducts(query);
 
-    public Cart GetCart()
-    {
-        using var session = repository.OpenSession();
-        return session.State.Cart;
-    }
+    public Cart GetCart() => repository.GetCart();
 
     public CartTotals GetCartTotals() => prices.Calculate(GetCart());
 
@@ -134,13 +124,9 @@ public sealed class ShopService(IShopRepository repository, PriceCalculator pric
         return order;
     }
 
-    public IReadOnlyList<Order> GetOrders()
-    {
-        using var session = repository.OpenSession();
-        return session.State.Orders.ToList();
-    }
+    public IReadOnlyList<Order> GetOrders() => repository.GetOrders();
 
-    public Order? GetOrder(int id) => GetOrders().SingleOrDefault(o => o.Id == id);
+    public Order? GetOrder(int id) => repository.GetOrder(id);
 
     private static Product FindProduct(ShopState state, int id) => state.Products.SingleOrDefault(p => p.Id == id)
         ?? throw new ShopNotFoundException("Product not found.");

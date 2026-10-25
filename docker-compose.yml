@@ -2,7 +2,7 @@ services:
   quality-shop:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: variant-01-baseline/Dockerfile
     ports:
       - "8080:8080"
     environment:

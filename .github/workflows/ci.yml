@@ -16,7 +16,7 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet restore Testing_QualityShop.sln
       - name: Check formatting in the new variants (baseline remains exercise material)
-        run: dotnet format Testing_QualityShop.sln --verify-no-changes --no-restore --include variants
+        run: dotnet format Testing_QualityShop.sln --verify-no-changes --no-restore --include variant-02-functional-core variant-03-dependency-injection variant-04-sql-server
       - run: dotnet build Testing_QualityShop.sln --configuration Release --no-restore
       - name: Dependency vulnerability report
         run: dotnet list Testing_QualityShop.sln package --vulnerable --include-transitive
@@ -46,7 +46,7 @@ jobs:
           dotnet-version: 8.0.x
       - name: Deliberately red baseline examples (visible, outside regression gates)
         continue-on-error: true
-        run: dotnet test Testing_QualityShop.Test.Unit --filter TestCategory=DefectDemonstration --logger trx --results-directory TestResults/demonstrations
+        run: dotnet test variant-01-baseline/Testing_QualityShop.Test.Unit --filter TestCategory=DefectDemonstration --logger trx --results-directory TestResults/demonstrations
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -61,11 +61,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet build Testing_QualityShop.Test.Ui
-      - run: pwsh Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+      - run: dotnet build variant-01-baseline/Testing_QualityShop.Test.Ui
+      - run: pwsh variant-01-baseline/Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
       - name: Start baseline and wait for HTTP readiness
         run: |
-          ASPNETCORE_ENVIRONMENT=Testing dotnet run --project Testing_QualityShop.Api --no-launch-profile --urls http://127.0.0.1:5080 > qualityshop.log 2>&1 &
+          ASPNETCORE_ENVIRONMENT=Testing dotnet run --project variant-01-baseline/Testing_QualityShop.Api --no-launch-profile --urls http://127.0.0.1:5080 > qualityshop.log 2>&1 &
           for attempt in {1..60}; do
             if curl --fail http://127.0.0.1:5080/api/products; then exit 0; fi
             sleep 1
@@ -74,7 +74,7 @@ jobs:
       - name: Run baseline browser tests
         env:
           QUALITYSHOP_BASE_URL: http://127.0.0.1:5080
-        run: dotnet test Testing_QualityShop.Test.Ui --no-build --logger trx --results-directory TestResults/ui
+        run: dotnet test variant-01-baseline/Testing_QualityShop.Test.Ui --no-build --logger trx --results-directory TestResults/ui
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -92,8 +92,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet build variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui
-      - run: pwsh variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+      - run: dotnet build variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui
+      - run: pwsh variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
       - name: Disposable SQL, real API integration, browser and k6 smoke
         shell: pwsh
         run: ./scripts/Test-Sql.ps1 -IncludeUi -IncludeSmoke

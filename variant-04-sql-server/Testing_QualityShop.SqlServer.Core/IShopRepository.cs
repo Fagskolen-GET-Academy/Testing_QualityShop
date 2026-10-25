@@ -2,6 +2,19 @@ namespace Testing_QualityShop.SqlServer.Core;
 
 public interface IShopRepository
 {
+    IReadOnlyList<Product> GetProducts();
+
+    Product? GetProduct(int id);
+
+    IReadOnlyList<Product> SearchProducts(string? query);
+
+    Cart GetCart();
+
+    IReadOnlyList<Order> GetOrders();
+
+    Order? GetOrder(int id);
+
+    // Only mutations need the locked working snapshot and explicit commit.
     IShopSession OpenSession();
 
     void Reset();

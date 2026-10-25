@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddSimpleConsole();
 var connectionString = builder.Configuration.GetConnectionString("Shop")
-    ?? throw new InvalidOperationException("Set ConnectionStrings__Shop. See variants/sql-server/README.md.");
+    ?? throw new InvalidOperationException("Set ConnectionStrings__Shop. See variant-04-sql-server/README.md.");
 new DatabaseInitializer(connectionString).Initialize();
 builder.Services.AddSingleton<IShopRepository>(new SqlShopRepository(connectionString));
 builder.Services.AddSingleton<PriceCalculator>();

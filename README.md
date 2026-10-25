@@ -1,6 +1,6 @@
 # Testing_QualityShop
 
-Quality Shop is GET Academy's teaching laboratory for *Testing og kvalitetssikring av programvare*. Four alternative implementations of the same shop let you compare test boundaries, feedback speed, diagnosis and maintenance. They live in one repository and in `Testing_QualityShop.sln` (also mirrored in `.slnx`).
+Quality Shop is GET Academy's teaching laboratory for *Testing og kvalitetssikring av programvare*. Four alternative implementations of the same shop let you compare test boundaries, feedback speed, diagnosis and maintenance. They live directly in the repository root, with `Testing_QualityShop.sln` as the only solution.
 
 Read [SYSTEM_RULES.md](SYSTEM_RULES.md) first: it defines expected business behavior. Existing code and tests are learning material, not an alternative specification. The baseline deliberately includes imperfect code and tests for investigation.
 
@@ -8,14 +8,31 @@ Read [SYSTEM_RULES.md](SYSTEM_RULES.md) first: it defines expected business beha
 
 | Solution folder | Code | Request flow | Default port |
 | --- | --- | --- | --- |
-| 01 - Baseline | Existing root projects | API → ShopService → InMemoryShopStore | 5080 |
-| 02 - Functional Core | `variants/functional-core` | API → imperative shell → pure ShopRules | 5081 |
-| 03 - Dependency Injection | `variants/dependency-injection` | API → ShopService → IShopRepository → InMemoryShopRepository | 5082 |
-| 04 - SQL Server | `variants/sql-server` | API → ShopService → IShopRepository → SqlShopRepository → SQL Server | 5083 / Docker 8083 |
+| 01 - Baseline | `variant-01-baseline` | API → ShopService → InMemoryShopStore | 5080 |
+| 02 - Functional Core | `variant-02-functional-core` | API → imperative shell → pure ShopRules | 5081 |
+| 03 - Dependency Injection - Repository | `variant-03-dependency-injection` | API → ShopService → IShopRepository → InMemoryShopRepository | 5082 |
+| 04 - SQL Server | `variant-04-sql-server` | API → ShopService → IShopRepository → SqlShopRepository → SQL Server | 5083 / Docker 8083 |
 
 These are alternatives, not successive layers. Models, services, API routes, seed data, frontend and representative tests are deliberately copied. Each variant owns its application code; there are no cross-variant project references. The shared rules and comparable scenarios support discussion, rather than a ranking of architectures.
 
-See [architecture and test boundaries](docs/ARCHITECTURE_VARIANTS.md), [API primer](docs/API_PRIMER.md) and [SQL/Docker instructions](variants/sql-server/README.md).
+```text
+Testing_QualityShop.sln
+SYSTEM_RULES.md
+variant-01-baseline/              # original project names and namespaces
+variant-02-functional-core/
+variant-03-dependency-injection/
+variant-04-sql-server/
+docs/
+performance-tests/
+scripts/
+laererveiledning/
+docker-compose.yml
+docker-compose.sql.yml
+```
+
+All variants use ASP.NET Core's dependency injection container and constructor injection. Variant 03 specifically introduces dependency inversion through a storage interface and demonstrates fake, spy and mock test doubles. It is not the first variant to use framework DI.
+
+See [architecture and test boundaries](docs/ARCHITECTURE_VARIANTS.md), [API primer](docs/API_PRIMER.md) and [SQL/Docker instructions](variant-04-sql-server/README.md).
 
 ## Requirements and build
 
@@ -31,16 +48,16 @@ dotnet restore Testing_QualityShop.sln
 dotnet build Testing_QualityShop.sln
 ```
 
-Always name the solution explicitly: both `.sln` and `.slnx` exist.
+The four numbered solution folders follow the same teaching order as the physical variant folders.
 
 ## Start an application
 
 Run one of these from the repository root, then open its default port:
 
 ```powershell
-dotnet run --project Testing_QualityShop.Api
-dotnet run --project variants/functional-core/Testing_QualityShop.FunctionalCore.Api
-dotnet run --project variants/dependency-injection/Testing_QualityShop.DependencyInjection.Api
+dotnet run --project variant-01-baseline/Testing_QualityShop.Api
+dotnet run --project variant-02-functional-core/Testing_QualityShop.FunctionalCore.Api
+dotnet run --project variant-03-dependency-injection/Testing_QualityShop.DependencyInjection.Api
 ```
 
 Start SQL and the complete SQL shop in Docker:
@@ -56,7 +73,7 @@ Or run only SQL in Docker and its API locally (http://localhost:5083):
 ```powershell
 . ./scripts/Set-SqlEnvironment.ps1
 docker compose -f docker-compose.sql.yml -p qualityshop-sql up -d --wait sqlserver
-dotnet run --project variants/sql-server/Testing_QualityShop.SqlServer.Api
+dotnet run --project variant-04-sql-server/Testing_QualityShop.SqlServer.Api
 ```
 
 `Set-SqlEnvironment.ps1` generates temporary local credentials in this terminal. Keep that terminal open for subsequent commands. Stop and discard its database with:
@@ -84,13 +101,13 @@ A fast regression gate includes all four unit suites and all API suites that do 
 Each project is also runnable directly:
 
 ```powershell
-dotnet test Testing_QualityShop.Test.Unit --filter 'TestCategory!=DefectDemonstration&TestCategory!=FlakyExample'
-dotnet test Testing_QualityShop.Test.Api
-dotnet test variants/functional-core/Testing_QualityShop.FunctionalCore.Test.Unit
-dotnet test variants/functional-core/Testing_QualityShop.FunctionalCore.Test.Api
-dotnet test variants/dependency-injection/Testing_QualityShop.DependencyInjection.Test.Unit
-dotnet test variants/dependency-injection/Testing_QualityShop.DependencyInjection.Test.Api
-dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Unit
+dotnet test variant-01-baseline/Testing_QualityShop.Test.Unit --filter 'TestCategory!=DefectDemonstration&TestCategory!=FlakyExample'
+dotnet test variant-01-baseline/Testing_QualityShop.Test.Api
+dotnet test variant-02-functional-core/Testing_QualityShop.FunctionalCore.Test.Unit
+dotnet test variant-02-functional-core/Testing_QualityShop.FunctionalCore.Test.Api
+dotnet test variant-03-dependency-injection/Testing_QualityShop.DependencyInjection.Test.Unit
+dotnet test variant-03-dependency-injection/Testing_QualityShop.DependencyInjection.Test.Api
+dotnet test variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Unit
 ```
 
 Start a fresh database container, migrate/seed, run real SQL API integration tests, and clean up even on failure:
@@ -101,14 +118,14 @@ Start a fresh database container, migrate/seed, run real SQL API integration tes
 ./scripts/Test-Sql.ps1 -IncludeUi -IncludeSmoke
 ```
 
-This script uses its own Compose project, dynamically allocated localhost ports and a database per fixture. It does not use a running development database. [SQL instructions](variants/sql-server/README.md) show the individual commands as well.
+This script uses its own Compose project, dynamically allocated localhost ports and a database per fixture. It does not use a running development database. [SQL instructions](variant-04-sql-server/README.md) show the individual commands as well.
 
 Baseline exercise suites are separate from the normal gate:
 
 ```powershell
-dotnet test Testing_QualityShop.Test.Unit --filter TestCategory=DefectDemonstration
+dotnet test variant-01-baseline/Testing_QualityShop.Test.Unit --filter TestCategory=DefectDemonstration
 # An Explicit timing example; run by name when studying flaky tests:
-dotnet test Testing_QualityShop.Test.Unit --filter FullyQualifiedName~OrderTimestampTests
+dotnet test variant-01-baseline/Testing_QualityShop.Test.Unit --filter FullyQualifiedName~OrderTimestampTests
 ```
 
 Red demonstration results are expected evidence to investigate against the rules. `ExistingPricingTests` is retained for test-refactoring practice. No failing result should be silently redefined as correct. `dotnet test Testing_QualityShop.sln` also attempts external SQL/browser suites and demonstrations; use the commands above to choose an intentional boundary.
@@ -120,19 +137,19 @@ Coverage can be collected with `--collect "XPlat Code Coverage"`. It is informat
 For the baseline, start its app, then:
 
 ```powershell
-dotnet build Testing_QualityShop.Test.Ui
-pwsh Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
+dotnet build variant-01-baseline/Testing_QualityShop.Test.Ui
+pwsh variant-01-baseline/Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
 $env:QUALITYSHOP_BASE_URL='http://localhost:5080'
-dotnet test Testing_QualityShop.Test.Ui --no-build
+dotnet test variant-01-baseline/Testing_QualityShop.Test.Ui --no-build
 ```
 
 For a running complete SQL app:
 
 ```powershell
-dotnet build variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui
-pwsh variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
+dotnet build variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui
+pwsh variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
 $env:QUALITYSHOP_BASE_URL='http://localhost:8083'
-dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui --no-build
+dotnet test variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui --no-build
 ```
 
 On Linux install Chromium's OS dependencies with `install --with-deps chromium`. Both suites reset data before every test and must run serially against their shared cart. Do not run two suites against the same app concurrently. Failure screenshots and traces are saved in `playwright-artifacts` under the test output directory. Inspect a trace with `pwsh <test-project>/bin/Debug/net8.0/playwright.ps1 show-trace <trace.zip>`.
@@ -165,4 +182,4 @@ Every API supports `SIMULATE_SLOW_SEARCH=true/false` (default true). Compare the
 
 [CI](.github/workflows/ci.yml) separates build/format/dependency reporting, fast regression gates, visible teaching demonstrations, baseline browser tests and a disposable SQL/full-system job. Screenshots, traces, TRX and coverage are uploaded. Regression failures block their jobs. The deliberate demonstration step has explicit `continue-on-error`; the Explicit timing example is a separate classroom experiment. Dependency scanning currently reports findings; deciding a dependency policy is a useful next quality-gate exercise. Heavy load/stress profiles stay manual.
 
-Use [testing overview](docs/TESTING_OVERVIEW.md), [automation goals](docs/AUTOMATION_GOALS.md), [AI testing exercises](docs/AI_TESTING_EXERCISES.md), and the test plan, defect report, test status and performance report templates in `docs`. The encrypted teacher guide under `lærerveiledning` is preserved; its password is distributed separately.
+Use [testing overview](docs/TESTING_OVERVIEW.md), [automation goals](docs/AUTOMATION_GOALS.md), [AI testing exercises](docs/AI_TESTING_EXERCISES.md), and the test plan, defect report, test status and performance report templates in `docs`. The encrypted teacher guide under `laererveiledning` is preserved; its password is distributed separately.

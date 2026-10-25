@@ -18,7 +18,7 @@ services:
   sql-api:
     build:
       context: .
-      dockerfile: variants/sql-server/Dockerfile
+      dockerfile: variant-04-sql-server/Dockerfile
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -26,7 +26,7 @@ services:
       - "127.0.0.1:${QUALITYSHOP_SQL_API_PORT:-8083}:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      SIMULATE_SLOW_SEARCH: "true"
+      SIMULATE_SLOW_SEARCH: ${SIMULATE_SLOW_SEARCH:-true}
       ConnectionStrings__Shop: "Server=sqlserver,1433;Database=QualityShop;User ID=sa;Password=${QUALITYSHOP_SQL_PASSWORD};Encrypt=True;TrustServerCertificate=True"
 
   k6:

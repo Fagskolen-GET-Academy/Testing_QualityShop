@@ -9,6 +9,20 @@ internal sealed class FakeShopRepository : IShopRepository
 
     public int CommitCount { get; private set; }
 
+    public IReadOnlyList<Product> GetProducts() => Saved.Copy().Products;
+
+    public Product? GetProduct(int id) => GetProducts().SingleOrDefault(p => p.Id == id);
+
+    public IReadOnlyList<Product> SearchProducts(string? query) => GetProducts()
+        .Where(p => string.IsNullOrWhiteSpace(query) || p.Name.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    public Cart GetCart() => Saved.Copy().Cart;
+
+    public IReadOnlyList<Order> GetOrders() => Saved.Copy().Orders;
+
+    public Order? GetOrder(int id) => GetOrders().SingleOrDefault(o => o.Id == id);
+
     public IShopSession OpenSession() => new FakeSession(this);
 
     public void Reset() => Saved = ShopState.Seed();

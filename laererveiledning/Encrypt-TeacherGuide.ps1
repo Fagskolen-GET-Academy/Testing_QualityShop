@@ -4,7 +4,7 @@ param(
     [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
     [string]$InputPath,
 
-    [string]$OutputPath = (Join-Path $PSScriptRoot 'lærerfasit.enc.js'),
+    [string]$OutputPath = (Join-Path $PSScriptRoot 'laererfasit.enc.js'),
 
     [switch]$DeleteSource
 )

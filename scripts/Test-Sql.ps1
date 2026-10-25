@@ -32,7 +32,7 @@ try {
     Write-Host "SQL is mapped to 127.0.0.1:$sqlPort"
     $env:QUALITYSHOP_TEST_CONNECTION = "Server=127.0.0.1,$sqlPort;Database=QualityShopTest;User ID=sa;Password=$env:QUALITYSHOP_SQL_PASSWORD;Encrypt=True;TrustServerCertificate=True"
     Write-Host '2. Each API test fixture migrates, seeds and finally drops its own database.'
-    Invoke-Checked dotnet @('test', 'variants/sql-server/Testing_QualityShop.SqlServer.Test.Api', '--logger', 'trx', '--results-directory', 'TestResults/sql')
+    Invoke-Checked dotnet @('test', 'variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Api', '--logger', 'trx', '--results-directory', 'TestResults/sql')
 
     if ($IncludeUi -or $IncludeSmoke) {
         Write-Host '3. Start the complete SQL application, including its static frontend.'
@@ -52,9 +52,9 @@ try {
         }
         if (-not $ready) { throw 'SQL application did not become ready.' }
         if ($IncludeUi) {
-            Invoke-Checked dotnet @('build', 'variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui')
-            Invoke-Checked pwsh @('variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1', 'install', 'chromium')
-            Invoke-Checked dotnet @('test', 'variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui', '--no-build', '--logger', 'trx', '--results-directory', 'TestResults/sql-ui')
+            Invoke-Checked dotnet @('build', 'variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui')
+            Invoke-Checked pwsh @('variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1', 'install', 'chromium')
+            Invoke-Checked dotnet @('test', 'variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui', '--no-build', '--logger', 'trx', '--results-directory', 'TestResults/sql-ui')
         }
         if ($IncludeSmoke) {
             Write-Host '4. Run the existing k6 smoke against the full system.'

@@ -23,7 +23,7 @@ Run from the repository root in PowerShell 7:
 docker compose -f docker-compose.sql.yml -p qualityshop-sql up -d --wait sqlserver
 docker compose -f docker-compose.sql.yml -p qualityshop-sql ps
 # Start local API at http://localhost:5083:
-dotnet run --project variants/sql-server/Testing_QualityShop.SqlServer.Api
+dotnet run --project variant-04-sql-server/Testing_QualityShop.SqlServer.Api
 ```
 
 Alternatively start the complete app at http://localhost:8083:
@@ -54,7 +54,9 @@ On API startup `DatabaseInitializer` creates a dedicated `QualityShop...` databa
 
 `Migrations/Seed.sql` is the authoritative SQL reset data. It restores the same six products/stock as the other variants, clears orders/cart/discount and resets order identity. Initialization runs it once. `SqlShopRepository.Reset()` runs it atomically on demand. `/api/test/reset` is mapped only in Development/Testing and is strictly test support. Never point reset/tests at valuable data.
 
-`OpenSession()` starts a SQL transaction and locks the singleton shop row. It loads a small detached snapshot. `Commit()` explicitly writes stock, cart, new order/lines and metadata, then commits once. Disposal without commit rolls back. This is why invalid stock or SQL constraint failures cannot leave partial orders. The snapshot strategy keeps the small case readable; it loads all orders and is intentionally not optimized for large histories.
+Read methods use focused SQL: `GetProducts`, `GetProduct` and `SearchProducts` query only Products; `GetOrders` and `GetOrder` join order headers/lines, with the latter filtering by ID in SQL. These reads do not open a mutation session, acquire its metadata lock or load unrelated state. Search uses parameterized literal text and case-insensitive matching. `GetCart` uses a short shared read transaction to keep discount and lines consistent.
+
+Only mutating service operations call `OpenSession()`. It starts a serializable transaction and takes an exclusive lock on the singleton shop row before loading a detached snapshot. `Commit()` explicitly writes stock, cart, new order/lines and metadata, then commits once. Disposal without commit rolls back. This preserves atomic orders and serializes concurrent cart writers. The mutation snapshot still includes order history to keep the existing small case readable; it is not optimized for large histories. Product/search reads avoid that cost entirely, keeping the controlled search-delay experiment visible.
 
 ## Run real database tests
 
@@ -71,23 +73,23 @@ To use the database you started manually instead:
 
 ```powershell
 # Set-SqlEnvironment also sets QUALITYSHOP_TEST_CONNECTION.
-dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Unit
-dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Api
+dotnet test variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Unit
+dotnet test variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Api
 # Repeat to investigate order independence:
-dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Api
+dotnet test variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Api
 ```
 
 Unit tests use only Core plus a hand-written fake and need no database. API fixtures generate separate `QualityShopTest_<guid>` databases, migrate/seed on startup, reset before every scenario and drop their database after teardown. `QUALITYSHOP_TEST_CONNECTION` supplies server credentials; its database name is replaced. A missing connection is an explicit configuration failure, never a silent skip or fallback to memory. Do not run fixtures sharing the same generated database in parallel; each fixture is marked nonparallel.
 
-The integration suite reads data changed with direct SQL, restarts an application host against the same database, verifies persisted cart/order lines/money/stock, probes rollback after a real SQL constraint failure, and exercises two repository instances. See `PersistenceTests` for evidence that a fake cannot provide.
+The integration suite reads data changed with direct SQL, restarts an application host against the same database, verifies persisted cart/order lines/money/stock, probes rollback after a real SQL constraint failure, and exercises two repository instances. It also holds a mutation session open while reading products/orders and checks SQL search escaping/parameters. See `PersistenceTests` for evidence that a fake cannot provide.
 
 For browser tests against the complete development container:
 
 ```powershell
-dotnet build variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui
-pwsh variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
+dotnet build variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui
+pwsh variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
 $env:QUALITYSHOP_BASE_URL='http://localhost:8083'
-dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui --no-build
+dotnet test variant-04-sql-server/Testing_QualityShop.SqlServer.Test.Ui --no-build
 ```
 
 The suite resets via test support, uses role/name locators, checks discounted totals across reload and verifies a browser-created order through HTTP. The target must be the SQL API with its real repository. A fresh browser context does not reset the server's shared cart, hence the explicit reset and serial execution.
@@ -100,4 +102,17 @@ docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6
 docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6 run /scripts/baseline.js
 ```
 
-Or use installed k6 with `BASE_URL=http://localhost:8083`. Existing smoke/baseline/load/stress/spike scripts remain unchanged. Set `SIMULATE_SLOW_SEARCH=false` for a subsequent run (edit the Compose environment or set it for a local API), restart the API, repeat the same profile and compare distributions. Timing thresholds are experiment budgets rather than universal machine-independent performance guarantees.
+Or use installed k6 with `BASE_URL=http://localhost:8083`. Existing smoke/baseline/load/stress/spike scripts remain unchanged. Compose reads `SIMULATE_SLOW_SEARCH` from the terminal environment, defaulting to true. To compare the same workload:
+
+```powershell
+$env:SIMULATE_SLOW_SEARCH='true'
+docker compose -f docker-compose.sql.yml -p qualityshop-sql up -d sql-api
+# Wait for GET /api/products to succeed before each measured run.
+docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6 run /scripts/baseline.js
+$env:SIMULATE_SLOW_SEARCH='false'
+docker compose -f docker-compose.sql.yml -p qualityshop-sql up -d sql-api
+# Wait for GET /api/products to succeed again.
+docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6 run /scripts/baseline.js
+```
+
+The changed environment recreates the API container; it preserves the running SQL container. Product search uses only a Products SELECT, with no global mutation lock or history load. Record the environment and compare distributions. Timing thresholds are experiment budgets rather than universal machine-independent performance guarantees.

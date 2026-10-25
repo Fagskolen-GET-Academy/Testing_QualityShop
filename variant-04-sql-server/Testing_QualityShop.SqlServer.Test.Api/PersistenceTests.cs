@@ -42,6 +42,39 @@ public sealed class PersistenceTests
         Assert.That(product!.Name, Is.EqualTo("Database probe"));
     }
 
+    [TestCase("/api/products")]
+    [TestCase("/api/products/1")]
+    [TestCase("/api/products/search?query=MOUSE")]
+    [TestCase("/api/orders")]
+    [TestCase("/api/orders/1")]
+    public async Task Catalog_and_order_reads_do_not_wait_for_the_mutation_metadata_lock(string path)
+    {
+        (await _client.PostAsJsonAsync("/api/cart/items", new { productId = 2, quantity = 1 })).EnsureSuccessStatusCode();
+        (await _client.PostAsync("/api/orders", null)).EnsureSuccessStatusCode();
+        var repository = new SqlShopRepository(_factory.ConnectionString);
+        using var heldMutation = repository.OpenSession();
+
+        // The generous timeout guards against a blocked request, not a latency budget.
+        // The old read path tried to acquire this same exclusive metadata lock.
+        using var response = await Task.Run(() => _client.GetAsync(path)).WaitAsync(TimeSpan.FromSeconds(10));
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    [TestCase("%", 1)]
+    [TestCase("_", 1)]
+    [TestCase("[", 1)]
+    [TestCase("' OR 1=1--", 0)]
+    public async Task Sql_search_uses_literal_parameterized_text(string query, int expectedCount)
+    {
+        using var connection = new SqlConnection(_factory.ConnectionString);
+        await connection.ExecuteAsync("UPDATE dbo.Products SET Name=@Name WHERE Id=1", new { Name = "Keyboard 100%_[" });
+
+        var products = await _client.GetFromJsonAsync<Product[]>("/api/products/search?query=" + Uri.EscapeDataString(query));
+
+        Assert.That(products, Has.Length.EqualTo(expectedCount));
+    }
+
     [Test]
     public async Task New_application_instance_reads_persisted_cart_then_order_lines_and_money()
     {

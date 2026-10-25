@@ -3,53 +3,53 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Core", "Testing_QualityShop.Core\Testing_QualityShop.Core.csproj", "{7F875D6F-EAC4-41AB-A60F-744D2C964B91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Core", "variant-01-baseline\Testing_QualityShop.Core\Testing_QualityShop.Core.csproj", "{7F875D6F-EAC4-41AB-A60F-744D2C964B91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Api", "Testing_QualityShop.Api\Testing_QualityShop.Api.csproj", "{79359497-C1AB-4412-89B6-4F529EB29236}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Api", "variant-01-baseline\Testing_QualityShop.Api\Testing_QualityShop.Api.csproj", "{79359497-C1AB-4412-89B6-4F529EB29236}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Test.Unit", "Testing_QualityShop.Test.Unit\Testing_QualityShop.Test.Unit.csproj", "{659F96F5-2754-4032-9822-244F9EAF8705}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Test.Unit", "variant-01-baseline\Testing_QualityShop.Test.Unit\Testing_QualityShop.Test.Unit.csproj", "{659F96F5-2754-4032-9822-244F9EAF8705}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Test.Api", "Testing_QualityShop.Test.Api\Testing_QualityShop.Test.Api.csproj", "{69644CE2-8208-46D2-9E37-C8E1CB879704}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Test.Api", "variant-01-baseline\Testing_QualityShop.Test.Api\Testing_QualityShop.Test.Api.csproj", "{69644CE2-8208-46D2-9E37-C8E1CB879704}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Test.Ui", "Testing_QualityShop.Test.Ui\Testing_QualityShop.Test.Ui.csproj", "{50922E06-A975-4F3A-AE0D-F8DE73017DF6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.Test.Ui", "variant-01-baseline\Testing_QualityShop.Test.Ui\Testing_QualityShop.Test.Ui.csproj", "{50922E06-A975-4F3A-AE0D-F8DE73017DF6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 - Baseline", "01 - Baseline", "{9125951A-EAD7-4FF1-ABC4-EB584F796498}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 - Functional Core", "02 - Functional Core", "{12C1A325-2FFB-4C58-8B94-56E7E6140BDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Api", "variants\functional-core\Testing_QualityShop.FunctionalCore.Api\Testing_QualityShop.FunctionalCore.Api.csproj", "{12277E08-A0C0-49E0-B2A5-8E7E08DB00EA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Api", "variant-02-functional-core\Testing_QualityShop.FunctionalCore.Api\Testing_QualityShop.FunctionalCore.Api.csproj", "{12277E08-A0C0-49E0-B2A5-8E7E08DB00EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Core", "variants\functional-core\Testing_QualityShop.FunctionalCore.Core\Testing_QualityShop.FunctionalCore.Core.csproj", "{D1150025-0957-4435-9367-9277B0131B78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Core", "variant-02-functional-core\Testing_QualityShop.FunctionalCore.Core\Testing_QualityShop.FunctionalCore.Core.csproj", "{D1150025-0957-4435-9367-9277B0131B78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Test.Api", "variants\functional-core\Testing_QualityShop.FunctionalCore.Test.Api\Testing_QualityShop.FunctionalCore.Test.Api.csproj", "{04A35A94-A1E0-4AA5-A665-0CE3FE7D6137}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Test.Api", "variant-02-functional-core\Testing_QualityShop.FunctionalCore.Test.Api\Testing_QualityShop.FunctionalCore.Test.Api.csproj", "{04A35A94-A1E0-4AA5-A665-0CE3FE7D6137}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Test.Unit", "variants\functional-core\Testing_QualityShop.FunctionalCore.Test.Unit\Testing_QualityShop.FunctionalCore.Test.Unit.csproj", "{A18FE9BC-36A5-4FC6-978D-75D3FE214BFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.FunctionalCore.Test.Unit", "variant-02-functional-core\Testing_QualityShop.FunctionalCore.Test.Unit\Testing_QualityShop.FunctionalCore.Test.Unit.csproj", "{A18FE9BC-36A5-4FC6-978D-75D3FE214BFF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 - Dependency Injection", "03 - Dependency Injection", "{B3A9A917-8448-4717-AB6F-6623C2F1703B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 - Dependency Injection - Repository", "03 - Dependency Injection - Repository", "{B3A9A917-8448-4717-AB6F-6623C2F1703B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Api", "variants\dependency-injection\Testing_QualityShop.DependencyInjection.Api\Testing_QualityShop.DependencyInjection.Api.csproj", "{62754A2E-B540-4529-84CC-6D312133EF21}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Api", "variant-03-dependency-injection\Testing_QualityShop.DependencyInjection.Api\Testing_QualityShop.DependencyInjection.Api.csproj", "{62754A2E-B540-4529-84CC-6D312133EF21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Core", "variants\dependency-injection\Testing_QualityShop.DependencyInjection.Core\Testing_QualityShop.DependencyInjection.Core.csproj", "{8FF996C5-D214-46E3-BD1A-8E274B326E8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Core", "variant-03-dependency-injection\Testing_QualityShop.DependencyInjection.Core\Testing_QualityShop.DependencyInjection.Core.csproj", "{8FF996C5-D214-46E3-BD1A-8E274B326E8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Infrastructure", "variants\dependency-injection\Testing_QualityShop.DependencyInjection.Infrastructure\Testing_QualityShop.DependencyInjection.Infrastructure.csproj", "{F96FE5D0-31CA-4BCD-9F22-020CF372EEAD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Infrastructure", "variant-03-dependency-injection\Testing_QualityShop.DependencyInjection.Infrastructure\Testing_QualityShop.DependencyInjection.Infrastructure.csproj", "{F96FE5D0-31CA-4BCD-9F22-020CF372EEAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Test.Api", "variants\dependency-injection\Testing_QualityShop.DependencyInjection.Test.Api\Testing_QualityShop.DependencyInjection.Test.Api.csproj", "{44763DBA-3967-49FE-BE7B-219E36DEEDC8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Test.Api", "variant-03-dependency-injection\Testing_QualityShop.DependencyInjection.Test.Api\Testing_QualityShop.DependencyInjection.Test.Api.csproj", "{44763DBA-3967-49FE-BE7B-219E36DEEDC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Test.Unit", "variants\dependency-injection\Testing_QualityShop.DependencyInjection.Test.Unit\Testing_QualityShop.DependencyInjection.Test.Unit.csproj", "{0BD01ACE-B89C-4B2F-91F9-70B0DA9D6178}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.DependencyInjection.Test.Unit", "variant-03-dependency-injection\Testing_QualityShop.DependencyInjection.Test.Unit\Testing_QualityShop.DependencyInjection.Test.Unit.csproj", "{0BD01ACE-B89C-4B2F-91F9-70B0DA9D6178}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04 - SQL Server", "04 - SQL Server", "{8C58DA3B-564F-474E-AC3B-05ABAC1026BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Api", "variants\sql-server\Testing_QualityShop.SqlServer.Api\Testing_QualityShop.SqlServer.Api.csproj", "{468BD437-1560-4751-8961-18122626CDE1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Api", "variant-04-sql-server\Testing_QualityShop.SqlServer.Api\Testing_QualityShop.SqlServer.Api.csproj", "{468BD437-1560-4751-8961-18122626CDE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Core", "variants\sql-server\Testing_QualityShop.SqlServer.Core\Testing_QualityShop.SqlServer.Core.csproj", "{C2415490-81CF-43B4-BAB6-745A331AE276}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Core", "variant-04-sql-server\Testing_QualityShop.SqlServer.Core\Testing_QualityShop.SqlServer.Core.csproj", "{C2415490-81CF-43B4-BAB6-745A331AE276}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Infrastructure", "variants\sql-server\Testing_QualityShop.SqlServer.Infrastructure\Testing_QualityShop.SqlServer.Infrastructure.csproj", "{F5C53A04-1C02-47EF-A156-2122D4C1628F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Infrastructure", "variant-04-sql-server\Testing_QualityShop.SqlServer.Infrastructure\Testing_QualityShop.SqlServer.Infrastructure.csproj", "{F5C53A04-1C02-47EF-A156-2122D4C1628F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Test.Api", "variants\sql-server\Testing_QualityShop.SqlServer.Test.Api\Testing_QualityShop.SqlServer.Test.Api.csproj", "{A55C487A-F727-416F-91D1-D0D195D2632A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Test.Api", "variant-04-sql-server\Testing_QualityShop.SqlServer.Test.Api\Testing_QualityShop.SqlServer.Test.Api.csproj", "{A55C487A-F727-416F-91D1-D0D195D2632A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Test.Ui", "variants\sql-server\Testing_QualityShop.SqlServer.Test.Ui\Testing_QualityShop.SqlServer.Test.Ui.csproj", "{2D32B02B-06D5-4D95-878E-F2868ACBA03C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Test.Ui", "variant-04-sql-server\Testing_QualityShop.SqlServer.Test.Ui\Testing_QualityShop.SqlServer.Test.Ui.csproj", "{2D32B02B-06D5-4D95-878E-F2868ACBA03C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Test.Unit", "variants\sql-server\Testing_QualityShop.SqlServer.Test.Unit\Testing_QualityShop.SqlServer.Test.Unit.csproj", "{C5D0FA0B-1314-443A-9C30-3ECBAC490EF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing_QualityShop.SqlServer.Test.Unit", "variant-04-sql-server\Testing_QualityShop.SqlServer.Test.Unit\Testing_QualityShop.SqlServer.Test.Unit.csproj", "{C5D0FA0B-1314-443A-9C30-3ECBAC490EF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
