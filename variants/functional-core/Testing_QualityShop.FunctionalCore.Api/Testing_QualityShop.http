@@ -1,0 +1,59 @@
+@baseUrl = http://localhost:5081
+
+### List products
+GET {{baseUrl}}/api/products
+
+### Get one product
+GET {{baseUrl}}/api/products/1
+
+### Search products
+GET {{baseUrl}}/api/products/search?query=mouse
+
+### Read cart
+GET {{baseUrl}}/api/cart
+
+### Add to cart
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 1
+}
+
+### Update cart quantity
+PUT {{baseUrl}}/api/cart/items/1
+Content-Type: application/json
+
+{
+  "quantity": 2
+}
+
+### Apply discount
+POST {{baseUrl}}/api/cart/discount
+Content-Type: application/json
+
+{
+  "code": "SAVE10"
+}
+
+### Place order
+POST {{baseUrl}}/api/orders
+
+### List orders
+GET {{baseUrl}}/api/orders
+
+### Reset test data (Development and Testing only)
+POST {{baseUrl}}/api/test/reset
+
+### Remove discount
+DELETE {{baseUrl}}/api/cart/discount
+
+### Remove cart line
+DELETE {{baseUrl}}/api/cart/items/1
+
+### Clear cart
+DELETE {{baseUrl}}/api/cart
+
+### Read order
+GET {{baseUrl}}/api/orders/1

@@ -1,7 +1,30 @@
 <Solution>
-  <Project Path="Testing_QualityShop.Api/Testing_QualityShop.Api.csproj" />
-  <Project Path="Testing_QualityShop.Core/Testing_QualityShop.Core.csproj" />
-  <Project Path="Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj" />
-  <Project Path="Testing_QualityShop.Test.Ui/Testing_QualityShop.Test.Ui.csproj" />
-  <Project Path="Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj" />
+  <Folder Name="/01 - Baseline/">
+    <Project Path="Testing_QualityShop.Api/Testing_QualityShop.Api.csproj" />
+    <Project Path="Testing_QualityShop.Core/Testing_QualityShop.Core.csproj" />
+    <Project Path="Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj" />
+    <Project Path="Testing_QualityShop.Test.Ui/Testing_QualityShop.Test.Ui.csproj" />
+    <Project Path="Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj" />
+  </Folder>
+  <Folder Name="/02 - Functional Core/">
+    <Project Path="variants/functional-core/Testing_QualityShop.FunctionalCore.Api/Testing_QualityShop.FunctionalCore.Api.csproj" />
+    <Project Path="variants/functional-core/Testing_QualityShop.FunctionalCore.Core/Testing_QualityShop.FunctionalCore.Core.csproj" />
+    <Project Path="variants/functional-core/Testing_QualityShop.FunctionalCore.Test.Api/Testing_QualityShop.FunctionalCore.Test.Api.csproj" />
+    <Project Path="variants/functional-core/Testing_QualityShop.FunctionalCore.Test.Unit/Testing_QualityShop.FunctionalCore.Test.Unit.csproj" />
+  </Folder>
+  <Folder Name="/03 - Dependency Injection/">
+    <Project Path="variants/dependency-injection/Testing_QualityShop.DependencyInjection.Api/Testing_QualityShop.DependencyInjection.Api.csproj" />
+    <Project Path="variants/dependency-injection/Testing_QualityShop.DependencyInjection.Core/Testing_QualityShop.DependencyInjection.Core.csproj" />
+    <Project Path="variants/dependency-injection/Testing_QualityShop.DependencyInjection.Infrastructure/Testing_QualityShop.DependencyInjection.Infrastructure.csproj" />
+    <Project Path="variants/dependency-injection/Testing_QualityShop.DependencyInjection.Test.Api/Testing_QualityShop.DependencyInjection.Test.Api.csproj" />
+    <Project Path="variants/dependency-injection/Testing_QualityShop.DependencyInjection.Test.Unit/Testing_QualityShop.DependencyInjection.Test.Unit.csproj" />
+  </Folder>
+  <Folder Name="/04 - SQL Server/">
+    <Project Path="variants/sql-server/Testing_QualityShop.SqlServer.Api/Testing_QualityShop.SqlServer.Api.csproj" />
+    <Project Path="variants/sql-server/Testing_QualityShop.SqlServer.Core/Testing_QualityShop.SqlServer.Core.csproj" />
+    <Project Path="variants/sql-server/Testing_QualityShop.SqlServer.Infrastructure/Testing_QualityShop.SqlServer.Infrastructure.csproj" />
+    <Project Path="variants/sql-server/Testing_QualityShop.SqlServer.Test.Api/Testing_QualityShop.SqlServer.Test.Api.csproj" />
+    <Project Path="variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/Testing_QualityShop.SqlServer.Test.Ui.csproj" />
+    <Project Path="variants/sql-server/Testing_QualityShop.SqlServer.Test.Unit/Testing_QualityShop.SqlServer.Test.Unit.csproj" />
+  </Folder>
 </Solution>

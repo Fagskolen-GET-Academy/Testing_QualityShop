@@ -23,3 +23,9 @@ A unit test can isolate a boundary rule precisely, but it cannot prove that an A
 The test pyramid is a useful conversation model, not an absolute quota. Choose the level that gives the clearest, fastest feedback for the risk. Use a small number of end-to-end tests for critical flows and more focused tests where a rule can be isolated.
 
 Also consider test types that are not tied to one level: exploratory, accessibility, usability, security, compatibility, and performance testing can reveal different risks.
+
+## Compare implementation boundaries
+
+The four alternative shops add a second dimension to the levels above. See [ARCHITECTURE_VARIANTS.md](ARCHITECTURE_VARIANTS.md): a pure rule has no substituted dependency, a service fake replaces storage, and SQL API tests include a real database. Browser tests add rendering and user interaction. Use the same scenario at several boundaries and explain what each result can and cannot establish.
+
+The fast regression suite is `pwsh ./scripts/Test-Fast.ps1`. Real SQL integration is `pwsh ./scripts/Test-Sql.ps1`, optionally with `-IncludeUi -IncludeSmoke`. Baseline `DefectDemonstration` and Explicit `FlakyExample` suites are separate teaching experiments; their results must be interpreted against the rules, not folded silently into the regression gate.

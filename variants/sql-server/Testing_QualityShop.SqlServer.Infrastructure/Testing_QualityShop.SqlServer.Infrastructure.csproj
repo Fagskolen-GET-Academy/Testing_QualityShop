@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Testing_QualityShop.SqlServer.Core/Testing_QualityShop.SqlServer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.7" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <!-- Override SqlClient's transitive 8.0.1 with the .NET 8 security fix. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
+    <EmbeddedResource Include="Migrations/*.sql" />
+  </ItemGroup>
+</Project>

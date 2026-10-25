@@ -1,0 +1,39 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${QUALITYSHOP_SQL_PASSWORD:?Run scripts/Set-SqlEnvironment.ps1 first}
+    ports:
+      - "127.0.0.1:${QUALITYSHOP_SQL_PORT:-14333}:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -b -Q 'SELECT 1' > /dev/null"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    # No named volume: down removes this lab's database state.
+
+  sql-api:
+    build:
+      context: .
+      dockerfile: variants/sql-server/Dockerfile
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${QUALITYSHOP_SQL_API_PORT:-8083}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      SIMULATE_SLOW_SEARCH: "true"
+      ConnectionStrings__Shop: "Server=sqlserver,1433;Database=QualityShop;User ID=sa;Password=${QUALITYSHOP_SQL_PASSWORD};Encrypt=True;TrustServerCertificate=True"
+
+  k6:
+    image: grafana/k6:1.0.0
+    profiles: [performance]
+    volumes:
+      - ./performance-tests:/scripts:ro
+    environment:
+      BASE_URL: http://sql-api:8080
+    command: run /scripts/smoke.js

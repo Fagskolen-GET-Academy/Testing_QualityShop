@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   quality:
@@ -14,56 +15,93 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - run: dotnet restore Testing_QualityShop.sln
-      - run: dotnet format Testing_QualityShop.sln --verify-no-changes --no-restore
+      - name: Check formatting in the new variants (baseline remains exercise material)
+        run: dotnet format Testing_QualityShop.sln --verify-no-changes --no-restore --include variants
       - run: dotnet build Testing_QualityShop.sln --configuration Release --no-restore
+      - name: Dependency vulnerability report
+        run: dotnet list Testing_QualityShop.sln package --vulnerable --include-transitive
 
-  unit-tests:
+  fast-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet restore Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj
-      - run: >-
-          dotnet test Testing_QualityShop.Test.Unit/Testing_QualityShop.Test.Unit.csproj
-          --configuration Release
-          --no-restore
-          --filter TestCategory!=FlakyExample
-          --collect "XPlat Code Coverage"
+      - name: Unit and API regression gates without SQL or browser
+        shell: pwsh
+        run: ./scripts/Test-Fast.ps1 -Configuration Release
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fast-test-results
+          path: '**/TestResults/**'
 
-  api-tests:
+  teaching-demonstrations:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet restore Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj
-      - run: >-
-          dotnet test Testing_QualityShop.Test.Api/Testing_QualityShop.Test.Api.csproj
-          --configuration Release
-          --no-restore
-          --collect "XPlat Code Coverage"
+      - name: Deliberately red baseline examples (visible, outside regression gates)
+        continue-on-error: true
+        run: dotnet test Testing_QualityShop.Test.Unit --filter TestCategory=DefectDemonstration --logger trx --results-directory TestResults/demonstrations
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: teaching-demonstration-results
+          path: TestResults/**
+      # FlakyExample stays Explicit; run it by name as a classroom experiment.
 
-  ui-tests:
+  baseline-ui:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet restore Testing_QualityShop.sln
-      - run: dotnet build Testing_QualityShop.sln --no-restore
+      - run: dotnet build Testing_QualityShop.Test.Ui
       - run: pwsh Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
-      - name: Start Quality Shop
+      - name: Start baseline and wait for HTTP readiness
         run: |
-          dotnet run --project Testing_QualityShop.Api --no-build --urls http://127.0.0.1:5080 > qualityshop.log 2>&1 &
-          for attempt in {1..30}; do
-            curl --fail http://127.0.0.1:5080/api/products && break
+          ASPNETCORE_ENVIRONMENT=Testing dotnet run --project Testing_QualityShop.Api --no-launch-profile --urls http://127.0.0.1:5080 > qualityshop.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl --fail http://127.0.0.1:5080/api/products; then exit 0; fi
             sleep 1
           done
-      - name: Run UI tests
+          exit 1
+      - name: Run baseline browser tests
         env:
           QUALITYSHOP_BASE_URL: http://127.0.0.1:5080
-        run: dotnet test Testing_QualityShop.Test.Ui --no-build
+        run: dotnet test Testing_QualityShop.Test.Ui --no-build --logger trx --results-directory TestResults/ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: baseline-ui-diagnostics
+          path: |
+            **/playwright-artifacts/**
+            TestResults/**
+            qualityshop.log
+
+  sql-full-system:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet build variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui
+      - run: pwsh variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+      - name: Disposable SQL, real API integration, browser and k6 smoke
+        shell: pwsh
+        run: ./scripts/Test-Sql.ps1 -IncludeUi -IncludeSmoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sql-full-system-diagnostics
+          path: |
+            TestResults/**
+            **/playwright-artifacts/**
+            sql-lab*.log

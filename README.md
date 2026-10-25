@@ -1,143 +1,168 @@
 # Testing_QualityShop
 
-Quality Shop is a small web shop used in GET Academy's *Testing og kvalitetssikring av programvare*. The application is intentionally easy to understand: an ASP.NET Minimal API serves a plain HTML, CSS, and JavaScript frontend, while all data lives in memory.
+Quality Shop is GET Academy's teaching laboratory for *Testing og kvalitetssikring av programvare*. Four alternative implementations of the same shop let you compare test boundaries, feedback speed, diagnosis and maintenance. They live in one repository and in `Testing_QualityShop.sln` (also mirrored in `.slnx`).
 
-The application and test suite are intentionally not perfect. Your task as a tester is to investigate, improve, automate, measure, and communicate what you find.
+Read [SYSTEM_RULES.md](SYSTEM_RULES.md) first: it defines expected business behavior. Existing code and tests are learning material, not an alternative specification. The baseline deliberately includes imperfect code and tests for investigation.
 
-## What you need
+## Four variants
 
-- .NET 8 SDK or newer
-- A modern browser
-- Docker Desktop for the container exercises
-- k6 for performance exercises
+| Solution folder | Code | Request flow | Default port |
+| --- | --- | --- | --- |
+| 01 - Baseline | Existing root projects | API → ShopService → InMemoryShopStore | 5080 |
+| 02 - Functional Core | `variants/functional-core` | API → imperative shell → pure ShopRules | 5081 |
+| 03 - Dependency Injection | `variants/dependency-injection` | API → ShopService → IShopRepository → InMemoryShopRepository | 5082 |
+| 04 - SQL Server | `variants/sql-server` | API → ShopService → IShopRepository → SqlShopRepository → SQL Server | 5083 / Docker 8083 |
 
-No database, cloud account, login, or external service is required.
+These are alternatives, not successive layers. Models, services, API routes, seed data, frontend and representative tests are deliberately copied. Each variant owns its application code; there are no cross-variant project references. The shared rules and comparable scenarios support discussion, rather than a ranking of architectures.
 
-## Solution structure
+See [architecture and test boundaries](docs/ARCHITECTURE_VARIANTS.md), [API primer](docs/API_PRIMER.md) and [SQL/Docker instructions](variants/sql-server/README.md).
 
-| Path | Purpose |
-| --- | --- |
-| `Testing_QualityShop.Core` | Products, cart, pricing, stock, orders, and in-memory data |
-| `Testing_QualityShop.Api` | Minimal API and the static frontend in `wwwroot` |
-| `Testing_QualityShop.Test.Unit` | NUnit tests for Core behavior |
-| `Testing_QualityShop.Test.Api` | In-process API tests using `WebApplicationFactory` |
-| `Testing_QualityShop.Test.Ui` | Playwright for .NET browser tests |
-| `performance-tests` | k6 smoke, baseline, load, stress, and spike profiles |
-| `docs` | Testing templates and learning support |
-| `.github/workflows` | Continuous integration workflow |
+## Requirements and build
 
-The dependency direction is deliberately small:
+- .NET 8 SDK or newer, with .NET 8 runtime; PowerShell 7 (`pwsh`) for the cross-platform scripts.
+- A modern browser; Playwright installs its own Chromium for automation.
+- Docker Desktop using Linux containers for SQL and container exercises (allow at least 2 GB for SQL Server).
+- k6, or the provided k6 Docker service, for performance exercises.
 
-```text
-Frontend -> API -> Core
+The first three variants need no database or external account.
+
+```powershell
+dotnet restore Testing_QualityShop.sln
+dotnet build Testing_QualityShop.sln
 ```
 
-## Start locally
+Always name the solution explicitly: both `.sln` and `.slnx` exist.
 
-From the repository root:
+## Start an application
 
-```bash
-dotnet restore
-dotnet build
+Run one of these from the repository root, then open its default port:
+
+```powershell
 dotnet run --project Testing_QualityShop.Api
+dotnet run --project variants/functional-core/Testing_QualityShop.FunctionalCore.Api
+dotnet run --project variants/dependency-injection/Testing_QualityShop.DependencyInjection.Api
 ```
 
-Open <http://localhost:5080>. The API examples in `Testing_QualityShop.Api/Testing_QualityShop.http` use the same address.
+Start SQL and the complete SQL shop in Docker:
+
+```powershell
+. ./scripts/Set-SqlEnvironment.ps1
+docker compose -f docker-compose.sql.yml -p qualityshop-sql up -d --build --wait sql-api
+# Open http://localhost:8083
+```
+
+Or run only SQL in Docker and its API locally (http://localhost:5083):
+
+```powershell
+. ./scripts/Set-SqlEnvironment.ps1
+docker compose -f docker-compose.sql.yml -p qualityshop-sql up -d --wait sqlserver
+dotnet run --project variants/sql-server/Testing_QualityShop.SqlServer.Api
+```
+
+`Set-SqlEnvironment.ps1` generates temporary local credentials in this terminal. Keep that terminal open for subsequent commands. Stop and discard its database with:
+
+```powershell
+docker compose -f docker-compose.sql.yml -p qualityshop-sql down --volumes
+```
+
+The original baseline Docker setup remains available at http://localhost:8080:
+
+```powershell
+docker compose up --build
+# In another terminal, when finished:
+docker compose down
+```
 
 ## Run tests
 
-Run all test projects:
+A fast regression gate includes all four unit suites and all API suites that do not require SQL:
 
-```bash
-dotnet test
+```powershell
+./scripts/Test-Fast.ps1
 ```
 
-Run one level at a time:
+Each project is also runnable directly:
 
-```bash
-dotnet test Testing_QualityShop.Test.Unit
+```powershell
+dotnet test Testing_QualityShop.Test.Unit --filter 'TestCategory!=DefectDemonstration&TestCategory!=FlakyExample'
 dotnet test Testing_QualityShop.Test.Api
-dotnet test Testing_QualityShop.Test.Ui
+dotnet test variants/functional-core/Testing_QualityShop.FunctionalCore.Test.Unit
+dotnet test variants/functional-core/Testing_QualityShop.FunctionalCore.Test.Api
+dotnet test variants/dependency-injection/Testing_QualityShop.DependencyInjection.Test.Unit
+dotnet test variants/dependency-injection/Testing_QualityShop.DependencyInjection.Test.Api
+dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Unit
 ```
 
-A failing test is evidence to investigate. Compare its expectation with `SYSTEM_RULES.md`, reproduce the behavior, and decide whether the problem is in the test, the application, or the environment.
+Start a fresh database container, migrate/seed, run real SQL API integration tests, and clean up even on failure:
 
-Coverage can be collected as information, not as proof of quality:
-
-```bash
-dotnet test --collect "XPlat Code Coverage"
+```powershell
+./scripts/Test-Sql.ps1
+# Include the complete application, Chromium tests and existing k6 smoke:
+./scripts/Test-Sql.ps1 -IncludeUi -IncludeSmoke
 ```
 
-## Run Playwright tests
+This script uses its own Compose project, dynamically allocated localhost ports and a database per fixture. It does not use a running development database. [SQL instructions](variants/sql-server/README.md) show the individual commands as well.
 
-Build first, then install Chromium once:
+Baseline exercise suites are separate from the normal gate:
+
+```powershell
+dotnet test Testing_QualityShop.Test.Unit --filter TestCategory=DefectDemonstration
+# An Explicit timing example; run by name when studying flaky tests:
+dotnet test Testing_QualityShop.Test.Unit --filter FullyQualifiedName~OrderTimestampTests
+```
+
+Red demonstration results are expected evidence to investigate against the rules. `ExistingPricingTests` is retained for test-refactoring practice. No failing result should be silently redefined as correct. `dotnet test Testing_QualityShop.sln` also attempts external SQL/browser suites and demonstrations; use the commands above to choose an intentional boundary.
+
+Coverage can be collected with `--collect "XPlat Code Coverage"`. It is information, not proof of quality.
+
+## Playwright
+
+For the baseline, start its app, then:
 
 ```powershell
 dotnet build Testing_QualityShop.Test.Ui
 pwsh Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
-```
-
-Start the application in one terminal and run the UI tests in another:
-
-```powershell
-$env:QUALITYSHOP_BASE_URL="http://localhost:5080"
+$env:QUALITYSHOP_BASE_URL='http://localhost:5080'
 dotnet test Testing_QualityShop.Test.Ui --no-build
 ```
 
-The test infrastructure captures a full-page screenshot and a Playwright trace when a UI test fails. Artifacts are written under the test output directory in `playwright-artifacts`. Open a trace with:
+For a running complete SQL app:
 
 ```powershell
-pwsh Testing_QualityShop.Test.Ui/bin/Debug/net8.0/playwright.ps1 show-trace path/to/trace.zip
+dotnet build variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui
+pwsh variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui/bin/Debug/net8.0/playwright.ps1 install chromium
+$env:QUALITYSHOP_BASE_URL='http://localhost:8083'
+dotnet test variants/sql-server/Testing_QualityShop.SqlServer.Test.Ui --no-build
 ```
 
-## Reset test data
+On Linux install Chromium's OS dependencies with `install --with-deps chromium`. Both suites reset data before every test and must run serially against their shared cart. Do not run two suites against the same app concurrently. Failure screenshots and traces are saved in `playwright-artifacts` under the test output directory. Inspect a trace with `pwsh <test-project>/bin/Debug/net8.0/playwright.ps1 show-trace <trace.zip>`.
 
-The store can be reset to its seed state in the `Development` and `Testing` environments:
+## Test support and performance
 
-```bash
+Each API project contains a `.http` file. Reset in Development/Testing with:
+
+```powershell
 curl -X POST http://localhost:5080/api/test/reset
 ```
 
-This endpoint exists only as test support. It is not an example of production API design. API and UI tests use it to keep scenarios independent.
+This endpoint is test infrastructure, not recommended production API design. It is absent in Production. In-memory state lasts for the process; SQL state lasts for the container unless explicitly reset or removed.
 
-## Docker
+All existing k6 profiles accept the SQL app as a target:
 
-Start one application container:
-
-```bash
-docker compose up --build
+```powershell
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/smoke.js
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/baseline.js
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/load.js
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/stress.js
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/spike.js
+# Without a local k6 installation, against the Compose SQL shop:
+docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6
 ```
 
-Open <http://localhost:8080>. Stop it with `Ctrl+C`, then remove the stopped container with:
+Every API supports `SIMULATE_SLOW_SEARCH=true/false` (default true). Compare the same workload before/after changing it and restarting the API. Read [performance-tests/README.md](performance-tests/README.md) for metrics and environment reporting.
 
-```bash
-docker compose down
-```
+## CI and learning material
 
-Docker provides a reproducible target for UI and performance testing; it is not required for ordinary local development.
+[CI](.github/workflows/ci.yml) separates build/format/dependency reporting, fast regression gates, visible teaching demonstrations, baseline browser tests and a disposable SQL/full-system job. Screenshots, traces, TRX and coverage are uploaded. Regression failures block their jobs. The deliberate demonstration step has explicit `continue-on-error`; the Explicit timing example is a separate classroom experiment. Dependency scanning currently reports findings; deciding a dependency policy is a useful next quality-gate exercise. Heavy load/stress profiles stay manual.
 
-## k6
-
-With the Docker environment running:
-
-```bash
-k6 run performance-tests/smoke.js
-k6 run performance-tests/baseline.js
-k6 run performance-tests/load.js
-k6 run performance-tests/stress.js
-k6 run performance-tests/spike.js
-```
-
-To target the application started with `dotnet run`:
-
-```bash
-k6 run -e BASE_URL=http://localhost:5080 performance-tests/smoke.js
-```
-
-Read `performance-tests/README.md` before changing load or target. Only run load tests against systems you own or are explicitly allowed to test.
-
-## Continuous integration
-
-`.github/workflows/ci.yml` separates quality/build, unit, API, and UI feedback into understandable jobs. It restores packages, checks formatting, builds, collects test coverage, installs Chromium, starts the application, and runs browser tests. Inspect both the workflow file and its run output: a pipeline is part of the test system and can also be improved.
-
-Start with the authoritative rules in `SYSTEM_RULES.md`, then use the templates in `docs` to plan, report defects, summarize status, and analyze performance.
+Use [testing overview](docs/TESTING_OVERVIEW.md), [automation goals](docs/AUTOMATION_GOALS.md), [AI testing exercises](docs/AI_TESTING_EXERCISES.md), and the test plan, defect report, test status and performance report templates in `docs`. The encrypted teacher guide under `lærerveiledning` is preserved; its password is distributed separately.

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quality Shop</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/model.js" defer></script>
+  <script src="js/view.js" defer></script>
+  <script src="js/controller.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">GET Academy testing case</p>
+      <h1>Quality Shop</h1>
+    </div>
+    <p>A small shop built for exploring software quality.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="products-heading">
+      <h2 id="products-heading">Products</h2>
+      <div id="product-list" class="product-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="cart-panel" aria-labelledby="cart-heading">
+      <h2 id="cart-heading">Shopping cart</h2>
+      <div id="cart-items" aria-live="polite"></div>
+
+      <form id="discount-form" class="discount-form">
+        <label for="discount-code">Discount code</label>
+        <div class="inline-controls">
+          <input id="discount-code" name="discountCode" autocomplete="off">
+          <button type="submit">Apply discount</button>
+          <button id="remove-discount" type="button" class="secondary">Remove discount</button>
+        </div>
+      </form>
+
+      <dl class="summary" aria-label="Cart summary">
+        <div><dt>Subtotal</dt><dd id="subtotal">NOK 0.00</dd></div>
+        <div><dt>Discount</dt><dd id="discount">NOK 0.00</dd></div>
+        <div><dt>Shipping</dt><dd id="shipping">NOK 99.00</dd></div>
+        <div class="total"><dt>Total</dt><dd id="total">NOK 99.00</dd></div>
+      </dl>
+
+      <button id="place-order" type="button" class="primary-action">Place order</button>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+</body>
+</html>

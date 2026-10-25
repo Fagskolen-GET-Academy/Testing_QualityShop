@@ -5,3 +5,9 @@
 .vs
 TestResults
 playwright-artifacts
+**/TestResults
+**/playwright-artifacts
+.env
+.env.*
+*.log
+lærerveiledning

@@ -21,7 +21,7 @@ Stock is reduced only when an order succeeds. Reset restores products, stock, ca
 
 ## Cart and subtotal
 
-The application has one shared in-memory cart. Each line contains product ID, product name, unit price, quantity, and line total.
+The application has one shared cart (in memory in the baseline and memory variants, persisted in the SQL Server variant). Each line contains product ID, product name, unit price, quantity, and line total.
 
 ```text
 Line total = unit price × quantity

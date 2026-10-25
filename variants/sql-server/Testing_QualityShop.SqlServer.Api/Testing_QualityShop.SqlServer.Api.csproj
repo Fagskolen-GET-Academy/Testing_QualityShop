@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Testing_QualityShop.SqlServer.Core/Testing_QualityShop.SqlServer.Core.csproj" />
+    <ProjectReference Include="../Testing_QualityShop.SqlServer.Infrastructure/Testing_QualityShop.SqlServer.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

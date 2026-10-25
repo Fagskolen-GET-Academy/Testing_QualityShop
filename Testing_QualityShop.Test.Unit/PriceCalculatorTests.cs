@@ -38,6 +38,7 @@ public sealed class PriceCalculatorTests
     }
 
     [Test]
+    [Category("DefectDemonstration")]
     public void Calculate_gives_free_shipping_at_exact_threshold()
     {
         var cart = TestData.CartWith((1000m, 1));
@@ -48,6 +49,7 @@ public sealed class PriceCalculatorTests
     }
 
     [Test]
+    [Category("DefectDemonstration")]
     public void Calculate_accepts_lowercase_discount_code()
     {
         var cart = TestData.CartWith((1000m, 1));

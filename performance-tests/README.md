@@ -37,3 +37,19 @@ k6 run performance-tests/spike.js
 - Application logs: compare search duration and time window with the k6 output.
 
 Record the machine, container settings, running background tasks, script, target URL, and test time. Run a baseline more than once before drawing conclusions. Change one relevant factor, repeat the same profile, and compare distributions rather than relying on one average.
+
+## SQL/full-system target
+
+Every profile can target the SQL variant without script changes:
+
+```powershell
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/smoke.js
+k6 run -e BASE_URL=http://localhost:8083 performance-tests/baseline.js
+# No local k6 install, with the SQL Compose application already running:
+docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6
+docker compose -f docker-compose.sql.yml -p qualityshop-sql run --rm k6 run /scripts/load.js
+```
+
+`pwsh ./scripts/Test-Sql.ps1 -IncludeSmoke` starts a fresh SQL/full-system target, runs real database API tests and smoke, then discards the containers. Use the longer-lived development setup for repeated performance comparisons. All variants retain `SIMULATE_SLOW_SEARCH` (default true). Change it, restart the API, repeat the same profile and compare with recorded baseline data.
+
+The existing timing thresholds are starting budgets for the lab. Record the environment and calibrate a justified budget; they are not claims about every machine. Keep response/status checks meaningful when tuning thresholds.

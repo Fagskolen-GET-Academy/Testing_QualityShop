@@ -268,6 +268,16 @@ ServiceFabricBackup/
 *.mdf
 *.ldf
 *.ndf
+.env
+.env.*
+!.env.example
+*.bak
+build.log
+qualityshop*.log
+sql-lab*.log
+fast-tests.log
+format.log
+dependency-report.log
 
 # Business Intelligence projects
 *.rdl.data

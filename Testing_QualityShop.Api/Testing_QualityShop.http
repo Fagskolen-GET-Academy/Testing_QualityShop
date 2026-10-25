@@ -45,3 +45,15 @@ GET {{baseUrl}}/api/orders
 
 ### Reset test data (Development and Testing only)
 POST {{baseUrl}}/api/test/reset
+
+### Remove discount
+DELETE {{baseUrl}}/api/cart/discount
+
+### Remove cart line
+DELETE {{baseUrl}}/api/cart/items/1
+
+### Clear cart
+DELETE {{baseUrl}}/api/cart
+
+### Read order
+GET {{baseUrl}}/api/orders/1
