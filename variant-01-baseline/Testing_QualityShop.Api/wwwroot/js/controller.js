@@ -1,83 +1,114 @@
-(function () {
-  let products = [];
-  let cart = null;
-
-  async function load() {
-    try {
-      [products, cart] = await Promise.all([window.shopApi.getProducts(), window.shopApi.getCart()]);
-      render();
-    } catch (error) {
-      window.shopView.showMessage(error.message, "error");
-    }
+async function startApp() {
+  try {
+    // Start both reads together, as in the original frontend.
+    const productsRequest = getProducts();
+    const cartRequest = getCart();
+    const results = await Promise.all([productsRequest, cartRequest]);
+    model.products = results[0];
+    model.cart = results[1];
+    refreshCartView();
+  } catch (error) {
+    setMessage(error.message, "error");
+    updateView("message");
   }
+}
 
-  function render() {
-    window.shopView.renderProducts(products, addItem);
-    window.shopView.renderCart(cart, updateItem, removeItem);
+async function addToCart(productId) {
+  try {
+    const quantity = Number(model.viewState.productQuantities[productId]);
+    model.cart = await addProductToCart(productId, quantity);
+    setMessage("Product added to cart.", "success");
+    refreshCartView();
+  } catch (error) {
+    setMessage(error.message, "error");
+    updateView("message");
   }
+}
 
-  async function addItem(productId, quantity) {
-    try {
-      cart = await window.shopApi.addItem(productId, quantity);
-      render();
-      window.shopView.showMessage("Product added to cart.", "success");
-    } catch (error) {
-      window.shopView.showMessage(error.message, "error");
-    }
+async function changeCartQuantity(productId) {
+  try {
+    const quantity = Number(model.viewState.cartQuantities[productId]);
+    model.cart = await updateCartItem(productId, quantity);
+    setMessage("Cart updated.", "success");
+    refreshCartView();
+  } catch (error) {
+    setMessage(error.message, "error");
+    updateView("message");
   }
+}
 
-  async function updateItem(productId, quantity) {
-    try {
-      cart = await window.shopApi.updateItem(productId, quantity);
-      render();
-      window.shopView.showMessage("Cart updated.", "success");
-    } catch (error) {
-      window.shopView.showMessage(error.message, "error");
-    }
+async function removeFromCart(productId) {
+  try {
+    model.cart = await removeProductFromCart(productId);
+    setMessage("Product removed.", "success");
+    refreshCartView();
+  } catch (error) {
+    setMessage(error.message, "error");
+    updateView("message");
   }
+}
 
-  async function removeItem(productId) {
-    try {
-      cart = await window.shopApi.removeItem(productId);
-      render();
-      window.shopView.showMessage("Product removed.", "success");
-    } catch (error) {
-      window.shopView.showMessage(error.message, "error");
-    }
+async function submitDiscountCode() {
+  try {
+    model.cart = await applyDiscount(model.viewState.discountCode);
+    model.viewState.discountCode = model.cart.discountCode || "";
+    setMessage("Discount applied.", "success");
+    // Keep this variant's existing partial refresh for the teaching case.
+    updateView("discount");
+  } catch (error) {
+    setMessage(error.message, "error");
+    updateView("message");
   }
+}
 
-  document.querySelector("#discount-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    try {
-      const code = document.querySelector("#discount-code").value;
-      cart = await window.shopApi.applyDiscount(code);
-      window.shopView.renderDiscountOnly(cart);
-      window.shopView.showMessage("Discount applied.", "success");
-    } catch (error) {
-      window.shopView.showMessage(error.message, "error");
-    }
-  });
+async function removeDiscountCode() {
+  try {
+    model.cart = await removeDiscount();
+    setMessage("Discount removed.", "success");
+    refreshCartView();
+  } catch (error) {
+    setMessage(error.message, "error");
+    updateView("message");
+  }
+}
 
-  document.querySelector("#remove-discount").addEventListener("click", async () => {
-    try {
-      cart = await window.shopApi.removeDiscount();
-      render();
-      window.shopView.showMessage("Discount removed.", "success");
-    } catch (error) {
-      window.shopView.showMessage(error.message, "error");
-    }
-  });
+async function submitOrder() {
+  try {
+    const order = await placeOrder();
+    setMessage(`Order ${order.id} placed successfully.`, "success");
+    // The original shows confirmation before reloading stock and cart.
+    updateView("message");
+    const productsRequest = getProducts();
+    const cartRequest = getCart();
+    const results = await Promise.all([productsRequest, cartRequest]);
+    model.products = results[0];
+    model.cart = results[1];
+    refreshCartView();
+  } catch {
+    setMessage("Unable to place order.", "error");
+    updateView("message");
+  }
+}
 
-  document.querySelector("#place-order").addEventListener("click", async () => {
-    try {
-      const order = await window.shopApi.placeOrder();
-      window.shopView.showMessage(`Order ${order.id} placed successfully.`, "success");
-      [products, cart] = await Promise.all([window.shopApi.getProducts(), window.shopApi.getCart()]);
-      render();
-    } catch {
-      window.shopView.showMessage("Unable to place order.", "error");
-    }
-  });
+function setMessage(text, kind) {
+  model.viewState.message = text;
+  model.viewState.messageKind = kind;
+}
 
-  load();
-})();
+function refreshCartView() {
+  // A full refresh resets the quantity inputs, just as the original did.
+  model.viewState.productQuantities = {};
+  for (let i = 0; i < model.products.length; i++) {
+    const product = model.products[i];
+    model.viewState.productQuantities[product.id] = "1";
+  }
+  model.viewState.cartQuantities = {};
+  for (let i = 0; i < model.cart.items.length; i++) {
+    const item = model.cart.items[i];
+    model.viewState.cartQuantities[item.productId] = String(item.quantity);
+  }
+  model.viewState.discountCode = model.cart.discountCode || "";
+  updateView();
+}
+
+startApp();

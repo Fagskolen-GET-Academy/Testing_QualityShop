@@ -1,124 +1,102 @@
-(function () {
+function updateView(part = "all") {
+  if (part === "all" && model.cart !== null) {
+    document.getElementById("product-list").innerHTML = productsView();
+    document.getElementById("cart-items").innerHTML = cartView();
+    updateSummaryView();
+  }
+  if ((part === "all" || part === "discount") && model.cart !== null) {
+    document.getElementById("discount").textContent = formatPrice(model.cart.discount);
+    document.getElementById("discount-code").value = model.viewState.discountCode;
+  }
+  document.getElementById("message").textContent = model.viewState.message;
+  document.getElementById("message").className =
+    `message ${model.viewState.messageKind}`.trim();
+}
+
+function productsView() {
+  let html = "";
+  for (let i = 0; i < model.products.length; i++) {
+    html += productView(model.products[i]);
+  }
+  return html;
+}
+
+function productView(product) {
+  const productId = Number(product.id);
+  const inputId = `product-${productId}-quantity`;
+  return /*HTML*/`
+    <article class="product-card">
+      <h3>${escapeHtml(product.name)}</h3>
+      <p class="price">${formatPrice(product.price)}</p>
+      <p>${escapeHtml(product.stockQuantity)} in stock</p>
+      <div class="product-controls">
+        <div>
+          <label for="${inputId}">Quantity</label>
+          <input id="${inputId}" type="number" min="1"
+            max="${escapeHtml(product.stockQuantity)}"
+            value="${escapeHtml(model.viewState.productQuantities[productId])}"
+            oninput="model.viewState.productQuantities[${productId}] = this.value">
+        </div>
+        <button type="button" aria-label="Add ${escapeHtml(product.name)} to cart"
+          ${product.stockQuantity === 0 ? "disabled" : ""}
+          onclick="addToCart(${productId})">Add to cart</button>
+      </div>
+    </article>`;
+}
+
+function cartView() {
+  if (model.cart.items.length === 0) {
+    return /*HTML*/`<p>Your cart is empty.</p>`;
+  }
+  let html = "";
+  for (let i = 0; i < model.cart.items.length; i++) {
+    html += cartItemView(model.cart.items[i]);
+  }
+  return /*HTML*/`<ul class="cart-list">${html}</ul>`;
+}
+
+function cartItemView(item) {
+  const productId = Number(item.productId);
+  const quantityId = `cart-${productId}-quantity`;
+  return /*HTML*/`
+    <li class="cart-item">
+      <div>
+        <h3>${escapeHtml(item.productName)}</h3>
+        <p>${formatPrice(item.unitPrice)} each · ${formatPrice(item.lineTotal)}</p>
+        <label for="${quantityId}">Quantity for ${escapeHtml(item.productName)}</label>
+        <input id="${quantityId}" type="number" min="1"
+          value="${escapeHtml(model.viewState.cartQuantities[productId])}"
+          oninput="model.viewState.cartQuantities[${productId}] = this.value"
+          onchange="changeCartQuantity(${productId})">
+      </div>
+      <button type="button" class="secondary"
+        aria-label="Remove ${escapeHtml(item.productName)} from cart"
+        onclick="removeFromCart(${productId})">Remove</button>
+    </li>`;
+}
+
+function updateSummaryView() {
+  document.getElementById("subtotal").textContent = formatPrice(model.cart.subtotal);
+  document.getElementById("shipping").textContent = formatPrice(model.cart.shipping);
+  document.getElementById("total").textContent = formatPrice(model.cart.total);
+}
+
+function formatPrice(value) {
+  // Keep the existing locale and currency formatting.
   const currency = new Intl.NumberFormat("en-NO", {
     style: "currency",
     currency: "NOK",
     minimumFractionDigits: 2
   });
+  return currency.format(value);
+}
 
-  function money(value) {
-    return currency.format(value);
-  }
-
-  function renderProducts(products, onAdd) {
-    const container = document.querySelector("#product-list");
-    container.replaceChildren();
-
-    products.forEach((product) => {
-      const card = document.createElement("article");
-      card.className = "product-card";
-
-      const heading = document.createElement("h3");
-      heading.textContent = product.name;
-
-      const price = document.createElement("p");
-      price.className = "price";
-      price.textContent = money(product.price);
-
-      const stock = document.createElement("p");
-      stock.textContent = `${product.stockQuantity} in stock`;
-
-      const controls = document.createElement("div");
-      controls.className = "product-controls";
-      const inputGroup = document.createElement("div");
-      const inputId = `product-${product.id}-quantity`;
-      const label = document.createElement("label");
-      label.htmlFor = inputId;
-      label.textContent = "Quantity";
-      const quantity = document.createElement("input");
-      quantity.id = inputId;
-      quantity.type = "number";
-      quantity.min = "1";
-      quantity.max = String(product.stockQuantity);
-      quantity.value = "1";
-      inputGroup.append(label, quantity);
-
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = "Add to cart";
-      button.setAttribute("aria-label", `Add ${product.name} to cart`);
-      button.disabled = product.stockQuantity === 0;
-      button.addEventListener("click", () => onAdd(product.id, Number(quantity.value)));
-
-      controls.append(inputGroup, button);
-      card.append(heading, price, stock, controls);
-      container.append(card);
-    });
-  }
-
-  function renderCart(cart, onUpdate, onRemove) {
-    const container = document.querySelector("#cart-items");
-    container.replaceChildren();
-
-    if (cart.items.length === 0) {
-      const empty = document.createElement("p");
-      empty.textContent = "Your cart is empty.";
-      container.append(empty);
-    } else {
-      const list = document.createElement("ul");
-      list.className = "cart-list";
-
-      cart.items.forEach((item) => {
-        const row = document.createElement("li");
-        row.className = "cart-item";
-        const details = document.createElement("div");
-        const heading = document.createElement("h3");
-        heading.textContent = item.productName;
-        const price = document.createElement("p");
-        price.textContent = `${money(item.unitPrice)} each · ${money(item.lineTotal)}`;
-
-        const quantityLabel = document.createElement("label");
-        const quantityId = `cart-${item.productId}-quantity`;
-        quantityLabel.htmlFor = quantityId;
-        quantityLabel.textContent = `Quantity for ${item.productName}`;
-        const quantity = document.createElement("input");
-        quantity.id = quantityId;
-        quantity.type = "number";
-        quantity.min = "1";
-        quantity.value = String(item.quantity);
-        quantity.addEventListener("change", () => onUpdate(item.productId, Number(quantity.value)));
-        details.append(heading, price, quantityLabel, quantity);
-
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "secondary";
-        remove.textContent = "Remove";
-        remove.setAttribute("aria-label", `Remove ${item.productName} from cart`);
-        remove.addEventListener("click", () => onRemove(item.productId));
-
-        row.append(details, remove);
-        list.append(row);
-      });
-
-      container.append(list);
-    }
-
-    document.querySelector("#subtotal").textContent = money(cart.subtotal);
-    document.querySelector("#discount").textContent = money(cart.discount);
-    document.querySelector("#shipping").textContent = money(cart.shipping);
-    document.querySelector("#total").textContent = money(cart.total);
-    document.querySelector("#discount-code").value = cart.discountCode || "";
-  }
-
-  function renderDiscountOnly(cart) {
-    document.querySelector("#discount").textContent = money(cart.discount);
-    document.querySelector("#discount-code").value = cart.discountCode || "";
-  }
-
-  function showMessage(text, kind = "") {
-    const message = document.querySelector("#message");
-    message.textContent = text;
-    message.className = `message ${kind}`.trim();
-  }
-
-  window.shopView = { renderProducts, renderCart, renderDiscountOnly, showMessage };
-})();
+function escapeHtml(value) {
+  // Template strings must display API data as text, like textContent did.
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}

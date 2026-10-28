@@ -34,6 +34,25 @@ All variants use ASP.NET Core's dependency injection container and constructor i
 
 See [architecture and test boundaries](docs/ARCHITECTURE_VARIANTS.md), [API primer](docs/API_PRIMER.md) and [SQL/Docker instructions](variant-04-sql-server/README.md).
 
+## Frontend architecture
+
+Each variant owns the same small Intro/Emne 2-style frontend under its API project's `wwwroot`. Open `index.html` and follow the named event handler to its controller. The five ordinary scripts load with `defer`, in this order, without modules or a build step:
+
+| File in `wwwroot/js` | Responsibility |
+| --- | --- |
+| `model.js` | One global `model`: products, cart and `viewState` for quantity inputs, discount input and status messages. |
+| `api.js` | General HTTP methods, `fetch`, JSON, headers and HTTP errors. No shop-specific URLs. |
+| `domainApi.js` | Named shop operations and their endpoint/request data. |
+| `view.js` | HTML from `model`, small product/cart views, price formatting and HTML escaping. |
+| `controller.js` | User actions, API calls, model updates and `startApp()`. |
+
+```text
+user → controller → domainApi → api → backend
+     → controller → model → updateView()
+```
+
+`startApp()` reads products and cart. Controllers call `refreshCartView()` to reset form values as before and then call `updateView()`. This updates the existing product/cart containers, summary and status from the model. A message-only update preserves inputs after a failed request; the existing variant-specific refresh behavior is retained. Views escape API text before inserting template HTML. Inline events call named controllers or store input values in `model.viewState`. Inspect `model` in the browser console to see the frontend state.
+
 ## Requirements and build
 
 - .NET 8 SDK or newer, with .NET 8 runtime; PowerShell 7 (`pwsh`) for the cross-platform scripts.
